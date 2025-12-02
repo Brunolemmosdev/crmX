@@ -19,10 +19,8 @@ export async function login(usernameOrEmail, password) {
         return { access, refresh };
     } catch (error) {
         console.error('Erro no login:', error.response?.data || error.message);
-        return {
-            success: false,
-            error: error.response?.data?.detail || 'Erro ao fazer login. Verifique suas credenciais.'
-        };
+        // Lança o erro para que o código chamador possa tratá-lo
+        throw error;
     }
 }
 
@@ -37,6 +35,18 @@ export function getAccessToken() {
 
 export function isAuthenticated() {
     return !!getAccessToken();
+}
+
+// Função para obter headers de autenticação
+export async function getAuthHeaders() {
+    const token = getAccessToken();
+    if (!token) {
+        console.error('⚠️ Token não encontrado! Faça login novamente.');
+    }
+    return {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
 }
 
 // Exemplo opcional de helper: cria uma instância Axios autenticada
@@ -55,6 +65,7 @@ const auth = {
     logout,
     getAccessToken,
     isAuthenticated,
+    getAuthHeaders,
     createAuthenticatedAxios,
 };
 
