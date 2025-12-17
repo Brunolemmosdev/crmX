@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('', RedirectView.as_view(url='/home/', permanent=False), name='root-redirect'),
     path('login/', views.login_view, name='login'),
+    path('login/simple/', views.login_simple, name='login_simple'),
     path('home/', views.home, name='home'),
 
     path('workspace/', views.workspace, name='workspace'),
@@ -25,6 +26,8 @@ urlpatterns = [
     path('sheet/detail/', views.sheet_detail2, name='sheet_detail2'),
 
     path('logout/', views.logout_view, name='logout'),
+    
+    path('debug/auth/', views.auth_debug, name='auth_debug'),
 
     path("home2/", views.home2, name="home2"),
     path("login2/", views.login_page, name="login_page"),

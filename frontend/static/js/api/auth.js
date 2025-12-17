@@ -38,16 +38,26 @@ function daysToMs(days) {
 }
 
 function saveTokens({ access, refresh }) {
+    console.log('💾 saveTokens: Iniciando...');
     const issuedAt = Date.now();
     const data = { access, refresh, issued_at: issuedAt };
     localStorage.setItem('auth_tokens', JSON.stringify(data));
+    
+    // Mantém formato antigo para compatibilidade
+    localStorage.setItem('access_token', access);
+    localStorage.setItem('refresh_token', refresh);
+    console.log('💾 saveTokens: LocalStorage OK');
 
-    // Cookie de acesso para Django (como já fazia)
+    // Cookie de acesso para Django com max-age de 1 dia
     try {
         const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
-        document.cookie = `access=${access}; Path=/; SameSite=Lax${secureFlag}`;
+        const maxAge = '; Max-Age=86400'; // 1 dia
+        document.cookie = `access=${access}; Path=/; SameSite=Lax${maxAge}${secureFlag}`;
+        document.cookie = `access_token=${access}; Path=/; SameSite=Lax${maxAge}${secureFlag}`;
+        console.log('💾 saveTokens: Cookies setados');
+        console.log('💾 Cookies agora:', document.cookie.split(';').filter(c => c.includes('access')));
     } catch (e) {
-        console.warn('Não foi possível setar cookie de acesso:', e);
+        console.error('❌ saveTokens: Erro ao setar cookie:', e);
     }
 }
 
@@ -93,12 +103,17 @@ function isRefreshExpired() {
 }
 
 export async function login(usernameOrEmail, password) {
+    console.log('🔐 auth.login: Iniciando login...');
     const response = await axios.post(LOGIN_URL, {
         username: usernameOrEmail,
         password: password
     });
+    console.log('📦 auth.login: Resposta recebida:', response.data);
     const { access, refresh } = response.data;
     saveTokens({ access, refresh });
+    console.log('💾 auth.login: Tokens salvos');
+    console.log('   - localStorage.access_token:', localStorage.getItem('access_token') ? 'OK' : 'MISSING');
+    console.log('   - Cookie access_token:', document.cookie.includes('access_token') ? 'OK' : 'MISSING');
     return { success: true, access, refresh };
 }
 
@@ -274,8 +289,14 @@ export { auth };
 
 // Interceptors globais Axios para toda a app
 document.addEventListener('DOMContentLoaded', async () => {
-    if (window.axios?.__auth_interceptors_installed) return;
-    window.axios.__auth_interceptors_installed = true;
+    // Verifica se axios existe e se já foi instalado
+    if (typeof axios === 'undefined') {
+        console.warn('⚠️ Axios não está carregado ainda');
+        return;
+    }
+    
+    if (axios.__auth_interceptors_installed) return;
+    axios.__auth_interceptors_installed = true;
 
     // Request: adiciona Authorization
     axios.interceptors.request.use(

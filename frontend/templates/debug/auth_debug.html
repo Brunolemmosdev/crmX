@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Login Status</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .debug-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .info-line {
+            padding: 8px 0;
+            font-family: monospace;
+        }
+        .status-ok { color: #28a745; }
+        .status-error { color: #dc3545; }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-panel">
+        <h1>🔍 Debug - Status de Autenticação</h1>
+        
+        <div class="section">
+            <h3>LocalStorage</h3>
+            <div id="localStorageInfo"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Cookies</h3>
+            <div id="cookieInfo"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Ações</h3>
+            <button onclick="testLogin()">Testar Login</button>
+            <button onclick="clearAll()">Limpar Tudo</button>
+            <button onclick="goToHome()">Ir para /home/</button>
+            <button onclick="location.reload()">Atualizar</button>
+        </div>
+        
+        <div class="section">
+            <h3>Console</h3>
+            <div id="console"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        function log(msg, isError = false) {
+            const console = document.getElementById('console');
+            const line = document.createElement('div');
+            line.className = 'info-line ' + (isError ? 'status-error' : 'status-ok');
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            console.appendChild(line);
+        }
+        
+        function displayLocalStorage() {
+            const container = document.getElementById('localStorageInfo');
+            container.innerHTML = '';
+            
+            const keys = ['access_token', 'refresh_token', 'auth_tokens'];
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                const line = document.createElement('div');
+                line.className = 'info-line ' + (value ? 'status-ok' : 'status-error');
+                line.textContent = `${key}: ${value ? value.substring(0, 50) + '...' : 'MISSING'}`;
+                container.appendChild(line);
+            });
+        }
+        
+        function displayCookies() {
+            const container = document.getElementById('cookieInfo');
+            container.innerHTML = '';
+            
+            const cookies = document.cookie.split(';');
+            if (cookies.length === 1 && cookies[0] === '') {
+                container.innerHTML = '<div class="info-line status-error">Nenhum cookie encontrado</div>';
+                return;
+            }
+            
+            cookies.forEach(cookie => {
+                const [name, value] = cookie.trim().split('=');
+                if (name.includes('access') || name.includes('token')) {
+                    const line = document.createElement('div');
+                    line.className = 'info-line status-ok';
+                    line.textContent = `${name}: ${value ? value.substring(0, 50) + '...' : 'EMPTY'}`;
+                    container.appendChild(line);
+                }
+            });
+        }
+        
+        async function testLogin() {
+            try {
+                log('Iniciando teste de login...');
+                const response = await axios.post('/api/v1/authentication/token/', {
+                    username: 'Brunodev',
+                    password: 'Blf072712@'
+                });
+                
+                log('Login bem-sucedido!');
+                const { access, refresh } = response.data;
+                
+                // Salva tokens
+                localStorage.setItem('access_token', access);
+                localStorage.setItem('refresh_token', refresh);
+                localStorage.setItem('auth_tokens', JSON.stringify({
+                    access, refresh, issued_at: Date.now()
+                }));
+                
+                // Seta cookies
+                document.cookie = `access=${access}; Path=/; SameSite=Lax`;
+                document.cookie = `access_token=${access}; Path=/; SameSite=Lax`;
+                
+                log('Tokens salvos com sucesso!');
+                displayLocalStorage();
+                displayCookies();
+            } catch (error) {
+                log('Erro no login: ' + error.message, true);
+            }
+        }
+        
+        function clearAll() {
+            localStorage.clear();
+            document.cookie.split(";").forEach(c => {
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+            log('Tudo limpo!');
+            displayLocalStorage();
+            displayCookies();
+        }
+        
+        function goToHome() {
+            log('Redirecionando para /home/...');
+            window.location.href = '/home/';
+        }
+        
+        // Display inicial
+        displayLocalStorage();
+        displayCookies();
+        log('Debug page loaded');
+    </script>
+</body>
+</html>

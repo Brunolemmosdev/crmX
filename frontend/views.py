@@ -12,6 +12,8 @@ from django.forms import HiddenInput
 from workspaces.models import Workspace
 from elements.models import ContratosElement
 from elements.forms import ContratosElementForm
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 def jwt_required(view_func):
     @wraps(view_func)
@@ -25,21 +27,25 @@ def jwt_required(view_func):
             # Fallback: tenta obter token de cookie (ex.: 'access_token')
             token = request.COOKIES.get('access_token') or request.COOKIES.get('access')
             if not token:
+                print(f"❌ JWT Required: No token found in cookies or headers")
                 return redirect('login')
         
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-            # Tenta associar o usuário autenticado ao request
-            user_id = payload.get('user_id') or payload.get('uid')
+            # Usa AccessToken do simplejwt para validar o token
+            access_token = AccessToken(token)
+            user_id = access_token['user_id']
+            
             if user_id:
                 User = get_user_model()
                 try:
                     request.user = User.objects.get(pk=user_id)
+                    print(f"✅ JWT Required: User authenticated - {request.user.username}")
                 except User.DoesNotExist:
+                    print(f"❌ JWT Required: User ID {user_id} not found")
                     request.user = AnonymousUser()
-        except jwt.ExpiredSignatureError:
-            return redirect('login')
-        except jwt.InvalidTokenError:
+                    return redirect('login')
+        except TokenError as e:
+            print(f"❌ JWT Required: Token error - {str(e)}")
             return redirect('login')
         
         return view_func(request, *args, **kwargs)
@@ -48,6 +54,9 @@ def jwt_required(view_func):
 
 def login_view(request):
     return render(request, 'login/login.html')
+
+def login_simple(request):
+    return render(request, 'login/login_simple.html')
 
 def root(request):
     # Se houver token nos cookies ou Authorization, tenta ir para home; senão, login
@@ -85,6 +94,9 @@ def workspace(request):
 
 def new_workspace(request):
     return render(request, 'workspace/new_workspace.html')
+
+def auth_debug(request):
+    return render(request, 'debug/auth_debug.html')
 
 def board(request):
     return render(request, 'board/board.html')

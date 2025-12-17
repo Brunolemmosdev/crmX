@@ -48,23 +48,38 @@ class LoginForm {
             
             const tokens = await auth.login(usernameOrEmail, password);
             console.log('Login Response:', tokens);
-            
-            const storedTokens = {
-                access: localStorage.getItem('access_token'),
-                refresh: localStorage.getItem('refresh_token')
-            };
-            console.log('Stored Tokens:', storedTokens);
             console.log('Is Authenticated?', auth.isAuthenticated());
             
-            if (!storedTokens.access) {
-                throw new Error('No access token stored after login');
+            if (!auth.isAuthenticated()) {
+                throw new Error('Authentication failed - no token stored');
             }
             
             console.log('Login successful, redirecting to /home/');
             console.groupEnd();
             
-            // Redireciona após login bem-sucedido
-            window.location.href = '/home/';
+            // Debug: verificar estado antes do redirect
+            console.log('🔍 Estado antes do redirect:');
+            console.log('  - localStorage.access_token:', localStorage.getItem('access_token') ? 'SET' : 'NOT SET');
+            console.log('  - Cookie:', document.cookie.includes('access_token') ? 'SET' : 'NOT SET');
+            
+            // Delay maior e verificação antes do redirect
+            setTimeout(() => {
+                // Verifica novamente
+                const hasToken = localStorage.getItem('access_token');
+                console.log('🔍 Verificação final:');
+                console.log('  - localStorage:', hasToken ? 'OK' : 'MISSING');
+                console.log('  - Todos os cookies:', document.cookie);
+                
+                if (!hasToken) {
+                    console.error('❌ Token não foi salvo corretamente!');
+                    alert('Erro ao salvar credenciais. Tente novamente.');
+                    return;
+                }
+                
+                console.log('🚀 Forçando reload da página para carregar tokens...');
+                // Usa replace para não criar histórico e força reload completo
+                window.location.replace('/home/');
+            }, 500);
         } catch (err) {
             let message = 'Erro ao autenticar.';
             if (err?.response?.status === 401) {

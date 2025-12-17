@@ -101,6 +101,75 @@
         </div>
     </div>
 
+    <!-- Script de fallback caso o módulo falhe -->
+    <script>
+        // Versão simplificada inline para garantir funcionamento
+        if (!window.loginHandlerInstalled) {
+            console.log('🔧 Instalando handler de login de fallback...');
+            window.loginHandlerInstalled = true;
+            
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('loginForm');
+                if (!form) {
+                    console.error('Formulário não encontrado');
+                    return;
+                }
+                
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    console.log('📝 Submit interceptado pelo fallback');
+                    
+                    const username = document.getElementById('username')?.value || '';
+                    const password = document.getElementById('password')?.value || '';
+                    const btn = document.getElementById('loginBtn');
+                    
+                    if (!username || !password) {
+                        alert('Preencha usuário e senha');
+                        return;
+                    }
+                    
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Aguarde...';
+                    
+                    try {
+                        console.log('🔐 Fazendo login...');
+                        const response = await axios.post('/api/v1/authentication/token/', {
+                            username: username,
+                            password: password
+                        });
+                        
+                        console.log('✅ Login bem-sucedido');
+                        const { access, refresh } = response.data;
+                        
+                        // Salvar tokens
+                        localStorage.setItem('access_token', access);
+                        localStorage.setItem('refresh_token', refresh);
+                        localStorage.setItem('auth_tokens', JSON.stringify({
+                            access, refresh, issued_at: Date.now()
+                        }));
+                        
+                        // Setar cookies
+                        const maxAge = '; Max-Age=86400';
+                        document.cookie = `access=${access}; Path=/; SameSite=Lax${maxAge}`;
+                        document.cookie = `access_token=${access}; Path=/; SameSite=Lax${maxAge}`;
+                        
+                        console.log('💾 Tokens salvos, redirecionando...');
+                        
+                        setTimeout(() => {
+                            window.location.replace('/home/');
+                        }, 300);
+                        
+                    } catch (error) {
+                        console.error('❌ Erro no login:', error);
+                        alert(error.response?.data?.detail || 'Usuário ou senha inválidos');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-door-open-fill"></i> Acessar';
+                    }
+                });
+            });
+        }
+    </script>
+
     <script src="{% static 'js/login.js' %}" type="module"></script>
 </body>
 </html>

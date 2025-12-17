@@ -266,6 +266,25 @@
         </div>
     </main>
 
+    <!-- Script para garantir que tokens estão disponíveis -->
+    <script>
+        // Executa ANTES de qualquer outro script
+        (function() {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                console.log('✅ Token encontrado no localStorage, setando cookies...');
+                // Força cookie mesmo se já existe
+                const maxAge = '; Max-Age=86400';
+                const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+                document.cookie = `access=${token}; Path=/; SameSite=Lax${maxAge}${secureFlag}`;
+                document.cookie = `access_token=${token}; Path=/; SameSite=Lax${maxAge}${secureFlag}`;
+                console.log('✅ Cookies setados:', document.cookie.split(';').filter(c => c.includes('access')));
+            } else {
+                console.warn('⚠️ Nenhum token no localStorage');
+            }
+        })();
+    </script>
+
     <!-- Scripts Base -->
     <script type="module" src="{% static 'js/services/auth.service.js' %}"></script>
     <script type="module" src="{% static 'js/services/http.client.js' %}"></script>
