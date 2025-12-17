@@ -159,6 +159,27 @@
   .editable-wrapper.cell-error {
     background-color: rgba(220, 53, 69, 0.2);
   }
+
+  .status-pagamento-select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ccd5e0;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .status-pagamento-select:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+
+  .editable-wrapper[data-field="status_pagamento"] {
+    padding: 2px;
+    cursor: default;
+  }
 </style>
 
 {% endblock %}
@@ -230,6 +251,11 @@
             {{ form.objeto.errors }}
           </div>
           <div class="form-group">
+            <label for="{{ form.status_pagamento.id_for_label }}">Status de Pagamento</label>
+            {{ form.status_pagamento }}
+            {{ form.status_pagamento.errors }}
+          </div>
+          <div class="form-group">
             <label for="{{ form.qtd_total_itens.id_for_label }}">Qtd. total itens</label>
             {{ form.qtd_total_itens }}
             {{ form.qtd_total_itens.errors }}
@@ -258,6 +284,7 @@
           <th>Elemento</th>
           <th>empresa</th>
           <th>objeto</th>
+          <th>Status de Pagamento</th>
           <th>qtd_total_itens</th>
           <th>valor_total_anterior</th>
           <th>valor_total_reajustado</th>
@@ -270,6 +297,12 @@
           <td class="editable-wrapper" contenteditable="true" data-field="elemento" data-type="text" data-value="{{ contrato.elemento|default_if_none:'' }}">{{ contrato.elemento|default:'-' }}</td>
           <td class="editable-wrapper" contenteditable="true" data-field="empresa" data-type="text" data-value="{{ contrato.empresa|default_if_none:'' }}">{{ contrato.empresa|default:'-' }}</td>
           <td class="editable-wrapper" contenteditable="true" data-field="objeto" data-type="text" data-value="{{ contrato.objeto|default_if_none:'' }}">{{ contrato.objeto|default:'-' }}</td>
+          <td class="editable-wrapper" contenteditable="true" data-field="status_pagamento" data-type="select" data-value="{{ contrato.status_pagamento|default_if_none:'pendente' }}">
+            <select class="status-pagamento-select" data-current-value="{{ contrato.status_pagamento|default_if_none:'pendente' }}">
+              <option value="pendente" {% if contrato.status_pagamento == 'pendente' or not contrato.status_pagamento %}selected{% endif %}>Pendente</option>
+              <option value="pago" {% if contrato.status_pagamento == 'pago' %}selected{% endif %}>Pago</option>
+            </select>
+          </td>
           <td class="editable-wrapper" contenteditable="true" data-field="qtd_total_itens" data-type="integer" data-value="{{ contrato.qtd_total_itens|default_if_none:0 }}">{{ contrato.qtd_total_itens|default:'-' }}</td>
           <td class="editable-wrapper" contenteditable="true" data-field="valor_total_anterior" data-type="currency" data-value="{{ contrato.valor_total_anterior|default_if_none:0 }}">R$ {{ contrato.valor_total_anterior|default_if_none:0|floatformat:2 }}</td>
           <td class="editable-wrapper" contenteditable="true" data-field="valor_total_reajustado" data-type="currency" data-value="{{ contrato.valor_total_reajustado|default_if_none:0 }}">R$ {{ contrato.valor_total_reajustado|default_if_none:0|floatformat:2 }}</td>
@@ -286,7 +319,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" style="text-align: center;">Nenhum contrato encontrado.</td>
+          <td colspan="8" style="text-align: center;">Nenhum contrato encontrado.</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -441,6 +474,38 @@
 
   const setupEditableCells = () => {
     document.querySelectorAll('.editable-wrapper[data-field]').forEach((cell) => {
+      const type = cell.dataset.type;
+      
+      // Tratamento especial para células com select
+      if (type === 'select') {
+        const select = cell.querySelector('select');
+        if (select) {
+          select.addEventListener('change', async () => {
+            const contratoId = cell.closest('tr')?.dataset?.contratoId;
+            const field = cell.dataset.field;
+            const newValue = select.value;
+            
+            if (!contratoId || !field) {
+              return;
+            }
+
+            cell.classList.add('cell-saving');
+            try {
+              await updateContratoField(cell, contratoId, field, newValue);
+              cell.dataset.value = newValue;
+              select.dataset.currentValue = newValue;
+            } catch (error) {
+              // Em caso de erro, reverter o select
+              select.value = select.dataset.currentValue || 'pendente';
+              showError(cell, error.message || 'Erro ao salvar');
+            } finally {
+              cell.classList.remove('cell-saving');
+            }
+          });
+        }
+        return;
+      }
+
       cell.addEventListener('focus', () => {
         cell.dataset.originalValue = cell.dataset.value ?? '';
         if ((cell.dataset.value ?? '') === '' && cell.textContent.trim() === '-') {

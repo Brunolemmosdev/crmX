@@ -26,6 +26,7 @@ class ContratosElementForm(forms.ModelForm):
             "elemento",
             "empresa",
             "objeto",
+            "status_pagamento",
             "qtd_total_itens",
             "valor_total_anterior",
             "valor_total_reajustado",

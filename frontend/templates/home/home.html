@@ -108,6 +108,7 @@
                         <th class="company-col">Empresa</th>
                         <th class="status-col" width="120">Status</th>
                         <th class="object-col">Objeto</th>
+                        <th class="payment-status-col" width="150">Status de Pagamento</th>
                         <th class="qty-col">Qtd Total Itens</th>
                         <th class="value-prev-col">Valor Total Anterior</th>
                         <th class="value-adj-col">Valor Total Reajustado</th>
@@ -144,6 +145,13 @@
                         <td class="object-col">
                             <span class="object-text">{{ contract.objeto|default:'-' }}</span>
                         </td>
+                        <td class="payment-status-col">
+                            <select class="payment-status-dropdown" data-contract-id="{{ contract.id }}" 
+                                    style="padding: 6px 30px 6px 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; background-position: right 8px center; background-repeat: no-repeat; background-size: 12px; appearance: none; width: 100%;">
+                                <option value="pendente" {% if contract.status_pagamento == 'pendente' or not contract.status_pagamento %}selected{% endif %} style="color: #ffc107;">Pendente</option>
+                                <option value="pago" {% if contract.status_pagamento == 'pago' %}selected{% endif %} style="color: #28a745;">Pago</option>
+                            </select>
+                        </td>
                         <td class="qty-col">
                             <span class="qty-value">{{ contract.qtd_total_itens|default:0 }}</span>
                         </td>
@@ -154,21 +162,23 @@
                             <span class="value-amount">R$ {{ contract.valor_total_reajustado|default:0|floatformat:2 }}</span>
                         </td>
                         <td class="actions-col">
-                            <button class="btn-icon attach-document-btn" data-contract-id="{{ contract.id }}" title="Anexar documento" style="background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
-                                <i class="fas fa-paperclip"></i>
-                            </button>
-                            <button class="btn-icon add-subelement-btn" data-contract-id="{{ contract.id }}" title="Adicionar subelemento" style="background: #ffc107; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                            <button class="btn-icon delete-contract-btn" data-contract-id="{{ contract.id }}" title="Excluir contrato" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <div style="display: flex; gap: 8px; align-items: center; white-space: nowrap;">
+                                <button class="btn-icon add-subelement-btn" data-contract-id="{{ contract.id }}" title="Adicionar subelemento" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button class="btn-icon attach-document-btn" data-contract-id="{{ contract.id }}" title="Anexar documentos" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <button class="btn-icon delete-contract-btn" data-contract-id="{{ contract.id }}" title="Excluir contrato" style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
 
                     <!-- Subelements Section (oculto inicialmente) -->
                     <tr class="subelements-section" style="display: none; background-color: #f8f9fa;" data-parent="{{ contract.id }}">
-                        <td colspan="10">
+                        <td colspan="11">
                             <div style="padding: 20px 20px 20px 90px;">
                                 <h5 style="margin-bottom: 15px; color: #333; font-weight: 600;">📋 Subelementos</h5>
                                 <table class="subelements-table" style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
@@ -199,7 +209,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
+                        <td colspan="11" style="text-align: center; padding: 40px; color: #999;">
                             <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
                             Nenhum contrato cadastrado
                         </td>
@@ -274,6 +284,19 @@
                         <option value="inativo" style="color: #dc3545;">✗ Inativo</option>
                         <option value="pendente" style="color: #ffc107;">⏳ Pendente</option>
                         <option value="concluido" style="color: #17a2b8;">✔ Concluído</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                        <i class="fas fa-credit-card" style="color: #667eea; margin-right: 8px;"></i>Status de Pagamento *
+                    </label>
+                    <select id="inputStatusPagamento" required
+                            style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s; box-sizing: border-box; cursor: pointer;"
+                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'"
+                            onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                        <option value="pendente" style="color: #ffc107;" selected>Pendente</option>
+                        <option value="pago" style="color: #28a745;">Pago</option>
                     </select>
                 </div>
 
@@ -535,6 +558,196 @@
         </div>
     </div>
 
+    <!-- Modal Anexar Documentos -->
+    <div id="modalAnexarDocumentos" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto;">
+        <div style="background-color: #fff; margin: 5% auto; padding: 0; width: 700px; max-width: 90%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); animation: slideDown 0.3s;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 20px 30px; border-radius: 12px 12px 0 0; color: white;">
+                <h3 style="margin: 0; font-size: 24px; font-weight: 600;">
+                    <i class="fas fa-paperclip"></i> Anexar Documentos
+                </h3>
+                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Faça upload de documentos relacionados ao contrato</p>
+            </div>
+            
+            <!-- Body -->
+            <div style="padding: 30px;">
+                <form id="formAnexarDocumentos">
+                    <input type="hidden" id="documentContractId" value="">
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                            <i class="fas fa-file-upload" style="color: #3b82f6; margin-right: 8px;"></i>Selecione os arquivos
+                        </label>
+                        <div style="border: 3px dashed #d1d5db; border-radius: 12px; padding: 40px; text-align: center; background: #f9fafb; transition: all 0.3s; cursor: pointer;" 
+                             id="dropZone"
+                             ondragover="event.preventDefault(); this.style.borderColor='#3b82f6'; this.style.background='#eff6ff';"
+                             ondragleave="this.style.borderColor='#d1d5db'; this.style.background='#f9fafb';"
+                             ondrop="event.preventDefault(); this.style.borderColor='#d1d5db'; this.style.background='#f9fafb';">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #3b82f6; margin-bottom: 15px; display: block;"></i>
+                            <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 600; color: #333;">Arraste arquivos aqui ou clique para selecionar</p>
+                            <p style="margin: 0; font-size: 13px; color: #6b7280;">Formatos aceitos: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (máx. 10MB)</p>
+                            <input type="file" id="inputDocuments" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div id="filesList" style="margin-bottom: 20px; display: none;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                            <i class="fas fa-list" style="color: #3b82f6; margin-right: 8px;"></i>Arquivos selecionados
+                        </label>
+                        <div id="filesContainer" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 15px; background: #f9fafb; max-height: 200px; overflow-y: auto;">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                            <i class="fas fa-comment" style="color: #3b82f6; margin-right: 8px;"></i>Observações (opcional)
+                        </label>
+                        <textarea id="inputDocumentNotes" rows="3"
+                                  style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s; resize: vertical; box-sizing: border-box; font-family: inherit;"
+                                  placeholder="Adicione observações sobre os documentos..."
+                                  onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+                                  onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'"></textarea>
+                    </div>
+
+                    <!-- Documentos Existentes -->
+                    <div id="existingDocuments" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                            <i class="fas fa-folder-open" style="color: #3b82f6; margin-right: 8px;"></i>Documentos anexados
+                        </label>
+                        <div id="existingDocumentsContainer" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 15px; background: #f9fafb; min-height: 60px;">
+                            <p style="text-align: center; color: #6b7280; margin: 20px 0;">
+                                <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Carregando...
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Footer com Botões -->
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 20px; border-top: 2px solid #f0f0f0;">
+                        <button type="button" id="btnCancelarDocumentos"
+                                style="padding: 12px 24px; border: 2px solid #e0e0e0; background: white; color: #666; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s;"
+                                onmouseover="this.style.background='#f5f5f5'; this.style.borderColor='#ccc'"
+                                onmouseout="this.style.background='white'; this.style.borderColor='#e0e0e0'">
+                            <i class="fas fa-times"></i> Fechar
+                        </button>
+                        <button type="submit"
+                                style="padding: 12px 24px; border: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(59,130,246,0.3);"
+                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(59,130,246,0.4)'"
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59,130,246,0.3)'">
+                            <i class="fas fa-upload"></i> Enviar Documentos
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Gerar Nota Fiscal -->
+    <div id="modalGerarNotaFiscal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto;">
+        <div style="background-color: #fff; margin: 3% auto; padding: 0; width: 900px; max-width: 95%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); animation: slideDown 0.3s;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px 30px; border-radius: 12px 12px 0 0; color: white;">
+                <h3 style="margin: 0; font-size: 24px; font-weight: 600;">
+                    <i class="fas fa-file-invoice"></i> Nota Fiscal
+                </h3>
+                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Visualize e imprima a nota fiscal do subelemento</p>
+            </div>
+            
+            <!-- Body -->
+            <div style="padding: 30px;">
+                <div id="notaFiscalContent" style="background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 40px; font-family: Arial, sans-serif;">
+                    <!-- Cabeçalho da Nota -->
+                    <div style="text-align: center; border-bottom: 3px solid #10b981; padding-bottom: 20px; margin-bottom: 30px;">
+                        <h1 style="margin: 0 0 10px 0; color: #10b981; font-size: 32px;">NOTA FISCAL</h1>
+                        <p style="margin: 0; color: #6b7280; font-size: 14px;">Documento não fiscal - Uso interno</p>
+                    </div>
+
+                    <!-- Dados da Empresa -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                        <div>
+                            <h3 style="color: #10b981; font-size: 16px; margin: 0 0 15px 0; border-bottom: 2px solid #10b981; padding-bottom: 5px;">EMITENTE</h3>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>Empresa:</strong> <span id="nfEmpresa">-</span></p>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>CNPJ:</strong> <span id="nfCnpj">00.000.000/0001-00</span></p>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>Endereço:</strong> <span id="nfEndereco">-</span></p>
+                        </div>
+                        <div>
+                            <h3 style="color: #10b981; font-size: 16px; margin: 0 0 15px 0; border-bottom: 2px solid #10b981; padding-bottom: 5px;">DADOS DA NOTA</h3>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>Número NF:</strong> <span id="nfNumero">-</span></p>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>Data Emissão:</strong> <span id="nfData">-</span></p>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>Contrato:</strong> <span id="nfContrato">-</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Itens da Nota -->
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #10b981; font-size: 16px; margin: 0 0 15px 0; border-bottom: 2px solid #10b981; padding-bottom: 5px;">DISCRIMINAÇÃO DOS SERVIÇOS/PRODUTOS</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                            <thead>
+                                <tr style="background: #f3f4f6;">
+                                    <th style="border: 1px solid #d1d5db; padding: 10px; text-align: left; font-size: 13px;">Descrição</th>
+                                    <th style="border: 1px solid #d1d5db; padding: 10px; text-align: center; font-size: 13px; width: 100px;">Qtd</th>
+                                    <th style="border: 1px solid #d1d5db; padding: 10px; text-align: right; font-size: 13px; width: 120px;">Valor Unit.</th>
+                                    <th style="border: 1px solid #d1d5db; padding: 10px; text-align: right; font-size: 13px; width: 120px;">IPCA (%)</th>
+                                    <th style="border: 1px solid #d1d5db; padding: 10px; text-align: right; font-size: 13px; width: 140px;">Valor Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="nfItens">
+                                <tr>
+                                    <td colspan="5" style="border: 1px solid #d1d5db; padding: 20px; text-align: center; color: #6b7280;">Carregando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Totais -->
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+                        <div style="width: 400px; background: #f9fafb; padding: 20px; border-radius: 8px; border: 2px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
+                                <span><strong>Valor Anterior:</strong></span>
+                                <span id="nfValorAnterior">R$ 0,00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
+                                <span><strong>Reajuste IPCA:</strong></span>
+                                <span id="nfReajuste" style="color: #10b981;">R$ 0,00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 2px solid #d1d5db; font-size: 18px; font-weight: 700; color: #10b981;">
+                                <span>VALOR TOTAL:</span>
+                                <span id="nfValorTotal">R$ 0,00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #10b981; font-size: 16px; margin: 0 0 10px 0; border-bottom: 2px solid #10b981; padding-bottom: 5px;">OBSERVAÇÕES</h3>
+                        <p id="nfObservacoes" style="margin: 0; font-size: 13px; color: #4b5563; line-height: 1.6;">-</p>
+                    </div>
+
+                    <!-- Rodapé -->
+                    <div style="text-align: center; padding-top: 20px; border-top: 2px solid #e5e7eb; color: #9ca3af; font-size: 12px;">
+                        <p style="margin: 5px 0;">Documento gerado automaticamente pelo sistema</p>
+                        <p style="margin: 5px 0;">Data de geração: <span id="nfDataGeracao"></span></p>
+                    </div>
+                </div>
+
+                <!-- Footer com Botões -->
+                <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 20px; margin-top: 20px; border-top: 2px solid #f0f0f0;">
+                    <button type="button" id="btnFecharNotaFiscal"
+                            style="padding: 12px 24px; border: 2px solid #e0e0e0; background: white; color: #666; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s;"
+                            onmouseover="this.style.background='#f5f5f5'; this.style.borderColor='#ccc'"
+                            onmouseout="this.style.background='white'; this.style.borderColor='#e0e0e0'">
+                        <i class="fas fa-times"></i> Fechar
+                    </button>
+                    <button type="button" id="btnImprimirNotaFiscal"
+                            style="padding: 12px 24px; border: none; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(16,185,129,0.3);"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(16,185,129,0.4)'"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.3)'">
+                        <i class="fas fa-print"></i> Imprimir Nota Fiscal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <style>
         @keyframes slideDown {
             from {
@@ -544,6 +757,21 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #notaFiscalContent, #notaFiscalContent * {
+                visibility: visible;
+            }
+            #notaFiscalContent {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
             }
         }
     </style>
@@ -590,6 +818,104 @@
             }
         };
 
+        // ===== FUNÇÕES DE NOTA FISCAL =====
+        const modalNotaFiscal = document.getElementById('modalGerarNotaFiscal');
+        const btnFecharNotaFiscal = document.getElementById('btnFecharNotaFiscal');
+        const btnImprimirNotaFiscal = document.getElementById('btnImprimirNotaFiscal');
+        let currentSubelementData = null;
+        let currentContractData = null;
+
+        // Preencher dados da nota fiscal
+        const fillInvoiceData = (contract, subelement) => {
+            // Dados da empresa
+            document.getElementById('nfEmpresa').textContent = contract.empresa || '-';
+            document.getElementById('nfCnpj').textContent = '00.000.000/0001-00';
+            document.getElementById('nfEndereco').textContent = '-';
+            
+            // Dados da nota
+            const numeroNF = `NF-${String(subelement.id).padStart(6, '0')}`;
+            document.getElementById('nfNumero').textContent = numeroNF;
+            
+            const dataEmissao = new Date().toLocaleDateString('pt-BR');
+            document.getElementById('nfData').textContent = dataEmissao;
+            document.getElementById('nfDataGeracao').textContent = new Date().toLocaleString('pt-BR');
+            
+            document.getElementById('nfContrato').textContent = `#${contract.id}`;
+            
+            // Itens da nota
+            const valorAnterior = parseFloat(subelement.valor_total || 0);
+            const valorReajustado = parseFloat(subelement.valor_total_reajustado || 0);
+            const reajuste = valorReajustado - valorAnterior;
+            
+            document.getElementById('nfItens').innerHTML = `
+                <tr>
+                    <td style="border: 1px solid #d1d5db; padding: 10px; font-size: 13px;">${subelement.nome || '-'}</td>
+                    <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; font-size: 13px;">${subelement.quantidade || 0}</td>
+                    <td style="border: 1px solid #d1d5db; padding: 10px; text-align: right; font-size: 13px;">${formatCurrency(subelement.valor_unitario_reajustado || 0)}</td>
+                    <td style="border: 1px solid #d1d5db; padding: 10px; text-align: right; font-size: 13px;">${subelement.valor_ipca || 0}%</td>
+                    <td style="border: 1px solid #d1d5db; padding: 10px; text-align: right; font-weight: 600; font-size: 13px;">${formatCurrency(valorReajustado)}</td>
+                </tr>
+            `;
+            
+            // Totais
+            document.getElementById('nfValorAnterior').textContent = formatCurrency(valorAnterior);
+            document.getElementById('nfReajuste').textContent = formatCurrency(reajuste);
+            document.getElementById('nfValorTotal').textContent = formatCurrency(valorReajustado);
+            
+            // Observações
+            document.getElementById('nfObservacoes').textContent = subelement.comentario || 'Sem observações adicionais.';
+        };
+
+        // Configurar botões de gerar nota fiscal
+        const setupGenerateInvoiceButtons = () => {
+            document.querySelectorAll('.generate-invoice-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    try {
+                        const subelementData = JSON.parse(this.dataset.subelement);
+                        const contractId = this.closest('.subelements-body').dataset.contractId;
+                        
+                        const headers = await getAuthHeaders();
+                        const response = await fetch(`${API_CONTRATOS}${contractId}/`, { headers });
+                        
+                        if (!response.ok) throw new Error('Erro ao buscar dados do contrato');
+                        
+                        currentContractData = await response.json();
+                        currentSubelementData = subelementData;
+                        
+                        // Verificar status de pagamento
+                        const statusPagamento = currentContractData.status_pagamento || 'pendente';
+                        
+                        if (statusPagamento !== 'pago') {
+                            alert('⚠️ Contrato Pendente!\n\nNão é possível gerar nota fiscal para contratos com pagamento pendente.\nAltere o status de pagamento para "Pago" antes de gerar a nota fiscal.');
+                            return;
+                        }
+                        
+                        fillInvoiceData(currentContractData, currentSubelementData);
+                        modalNotaFiscal.style.display = 'block';
+                    } catch (error) {
+                        alert(`❌ Erro ao gerar nota fiscal: ${error.message}`);
+                    }
+                });
+            });
+        };
+
+        // Fechar modal de nota fiscal
+        btnFecharNotaFiscal?.addEventListener('click', function() {
+            modalNotaFiscal.style.display = 'none';
+        });
+
+        // Imprimir nota fiscal
+        btnImprimirNotaFiscal?.addEventListener('click', function() {
+            window.print();
+        });
+
+        // Fechar modal ao clicar fora
+        window.addEventListener('click', function(event) {
+            if (event.target === modalNotaFiscal) {
+                modalNotaFiscal.style.display = 'none';
+            }
+        });
+
         // Carregar subelementos
         const loadSubelements = async (contractId) => {
             const tbody = document.querySelector(`.subelements-body[data-contract-id="${contractId}"]`);
@@ -621,15 +947,21 @@
                         <td style="padding: 12px; color: #28a745; font-weight: 600;">${formatCurrency(sub.valor_total_reajustado || 0)}</td>
                         <td style="padding: 12px; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${sub.comentario || '-'}</td>
                         <td style="padding: 12px; text-align: center;">
-                            <button class="delete-subelement-btn" data-subelement-id="${sub.id}" title="Excluir" style="background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <div style="display: flex; gap: 5px; justify-content: center; align-items: center;">
+                                <button class="generate-invoice-btn" data-subelement-id="${sub.id}" data-subelement='${JSON.stringify(sub)}' title="Gerar Nota Fiscal" style="background: #10b981; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fas fa-file-invoice"></i>
+                                </button>
+                                <button class="delete-subelement-btn" data-subelement-id="${sub.id}" title="Excluir" style="background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `).join('');
 
                 setupDeleteSubelementButtons();
                 await updateContractSummary(contractId);
+                setupGenerateInvoiceButtons();
             } catch (error) {
                 tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px; color: #dc3545;"><i class="fas fa-exclamation-triangle" style="font-size: 32px; margin-bottom: 10px; display: block;"></i>Erro: ${error.message}</td></tr>`;
             }
@@ -879,6 +1211,161 @@
             dropdown.dataset.previousStatus = dropdown.value;
         });
 
+        // Alterar status de pagamento do contrato
+        document.querySelectorAll('.payment-status-dropdown').forEach(dropdown => {
+            // Aplicar estilo baseado no status atual
+            const updatePaymentDropdownStyle = (select) => {
+                const value = select.value;
+                const colors = {
+                    'pendente': '#ffc107',
+                    'pago': '#28a745'
+                };
+                select.style.color = colors[value] || '#333';
+                select.style.borderColor = colors[value] || '#e0e0e0';
+                select.style.backgroundColor = colors[value] ? `${colors[value]}15` : 'white';
+            };
+
+            // Aplicar estilo inicial
+            updatePaymentDropdownStyle(dropdown);
+
+            // Event listener para mudança de status de pagamento
+            dropdown.addEventListener('change', async function() {
+                const contractId = this.dataset.contractId;
+                const newStatus = this.value;
+                const previousStatus = this.dataset.previousPaymentStatus || this.value;
+
+                // Atualizar estilo imediatamente
+                updatePaymentDropdownStyle(this);
+
+                try {
+                    const headers = await getAuthHeaders();
+                    headers['Content-Type'] = 'application/json';
+
+                    const response = await fetch(`${API_CONTRATOS}${contractId}/`, {
+                        method: 'PATCH',
+                        headers,
+                        body: JSON.stringify({
+                            status_pagamento: newStatus
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Erro ao atualizar status de pagamento');
+                    }
+
+                    // Armazenar novo status
+                    this.dataset.previousPaymentStatus = newStatus;
+
+                    // Feedback visual sutil
+                    const row = this.closest('tr');
+                    row.style.transition = 'background-color 0.3s';
+                    row.style.backgroundColor = '#e8f5e9';
+                    setTimeout(() => {
+                        row.style.backgroundColor = '';
+                    }, 800);
+
+                } catch (error) {
+                    // Reverter para o status anterior em caso de erro
+                    this.value = previousStatus;
+                    updatePaymentDropdownStyle(this);
+                    alert(`❌ Erro ao atualizar status de pagamento: ${error.message}`);
+                }
+            });
+
+            // Salvar status inicial
+            dropdown.dataset.previousPaymentStatus = dropdown.value;
+        });
+
+        // Edição inline de empresa e objeto
+        document.querySelectorAll('.editable-field').forEach(field => {
+            field.addEventListener('dblclick', function() {
+                const contractId = this.dataset.contractId;
+                const fieldName = this.dataset.field;
+                const currentValue = this.textContent.trim();
+                const originalValue = currentValue === '-' ? '' : currentValue;
+
+                // Criar input para edição
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = originalValue;
+                input.style.cssText = 'width: 100%; padding: 6px 10px; border: 2px solid #667eea; border-radius: 4px; font-size: 13px; font-family: inherit; box-shadow: 0 0 0 3px rgba(102,126,234,0.1);';
+                
+                // Substituir span por input
+                const parent = this.parentElement;
+                const span = this;
+                parent.replaceChild(input, span);
+                input.focus();
+                input.select();
+
+                // Função para salvar alterações
+                const saveChanges = async () => {
+                    const newValue = input.value.trim();
+                    
+                    // Se não mudou, apenas restaurar
+                    if (newValue === originalValue) {
+                        parent.replaceChild(span, input);
+                        return;
+                    }
+
+                    // Validação básica
+                    if (newValue === '') {
+                        alert('❌ O campo não pode ficar vazio!');
+                        input.focus();
+                        return;
+                    }
+
+                    try {
+                        const headers = await getAuthHeaders();
+                        headers['Content-Type'] = 'application/json';
+
+                        const response = await fetch(`${API_CONTRATOS}${contractId}/`, {
+                            method: 'PATCH',
+                            headers,
+                            body: JSON.stringify({
+                                [fieldName]: newValue
+                            })
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || 'Erro ao atualizar campo');
+                        }
+
+                        // Atualizar valor no span
+                        span.textContent = newValue;
+                        parent.replaceChild(span, input);
+
+                        // Feedback visual
+                        const row = parent.closest('tr');
+                        row.style.transition = 'background-color 0.3s';
+                        row.style.backgroundColor = '#e8f5e9';
+                        setTimeout(() => {
+                            row.style.backgroundColor = '';
+                        }, 800);
+
+                    } catch (error) {
+                        alert(`❌ Erro ao atualizar ${fieldName}: ${error.message}`);
+                        input.focus();
+                    }
+                };
+
+                // Salvar ao perder foco
+                input.addEventListener('blur', saveChanges);
+
+                // Salvar ao pressionar Enter
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveChanges();
+                    } else if (e.key === 'Escape') {
+                        // Cancelar edição com ESC
+                        parent.replaceChild(span, input);
+                    }
+                });
+            });
+        });
+
         // Expandir/colapsar subelementos (código antigo para compatibilidade)
         document.querySelectorAll('.toggle-subelements').forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -948,6 +1435,7 @@
             const empresa = document.getElementById('inputEmpresa').value;
             const objeto = document.getElementById('inputObjeto').value;
             const status = document.getElementById('inputStatus').value;
+            const statusPagamento = document.getElementById('inputStatusPagamento').value;
             const qtdItens = document.getElementById('inputQtdItens').value;
             const valorAnterior = document.getElementById('inputValorAnterior').value;
             const valorReajustado = document.getElementById('inputValorReajustado').value;
@@ -964,6 +1452,7 @@
                         empresa: empresa,
                         objeto: objeto,
                         status: status,
+                        status_pagamento: statusPagamento,
                         qtd_total_itens: parseInt(qtdItens),
                         valor_total_anterior: parseFloat(valorAnterior),
                         valor_total_reajustado: parseFloat(valorReajustado)
@@ -1236,6 +1725,257 @@
                 modalElemento.style.display = 'none';
                 formElemento.reset();
                 location.reload();
+            } catch (error) {
+                alert(`❌ Erro: ${error.message}`);
+            }
+        });
+
+        // ===== MODAL ANEXAR DOCUMENTOS =====
+        const modalDocumentos = document.getElementById('modalAnexarDocumentos');
+        const btnCancelarDocumentos = document.getElementById('btnCancelarDocumentos');
+        const formDocumentos = document.getElementById('formAnexarDocumentos');
+        const inputDocuments = document.getElementById('inputDocuments');
+        const dropZone = document.getElementById('dropZone');
+        const filesList = document.getElementById('filesList');
+        const filesContainer = document.getElementById('filesContainer');
+        let selectedFiles = [];
+
+        // Abrir modal de documentos
+        document.querySelectorAll('.attach-document-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const contractId = this.dataset.contractId;
+                document.getElementById('documentContractId').value = contractId;
+                modalDocumentos.style.display = 'block';
+                selectedFiles = [];
+                filesList.style.display = 'none';
+                filesContainer.innerHTML = '';
+                
+                // Carregar documentos existentes
+                await loadExistingDocuments(contractId);
+            });
+        });
+
+        // Fechar modal de documentos
+        btnCancelarDocumentos?.addEventListener('click', function() {
+            modalDocumentos.style.display = 'none';
+            formDocumentos.reset();
+            selectedFiles = [];
+            filesList.style.display = 'none';
+            filesContainer.innerHTML = '';
+        });
+
+        // Click na zona de drop abre seletor de arquivos
+        dropZone.addEventListener('click', () => {
+            inputDocuments.click();
+        });
+
+        // Drag and drop
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#d1d5db';
+            dropZone.style.background = '#f9fafb';
+            
+            const files = Array.from(e.dataTransfer.files);
+            handleFileSelection(files);
+        });
+
+        // Seleção de arquivos via input
+        inputDocuments.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            handleFileSelection(files);
+        });
+
+        // Função para processar arquivos selecionados
+        const handleFileSelection = (files) => {
+            const validExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.jpg', '.jpeg', '.png'];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+
+            files.forEach(file => {
+                const extension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!validExtensions.includes(extension)) {
+                    alert(`❌ Formato não aceito: ${file.name}`);
+                    return;
+                }
+                
+                if (file.size > maxSize) {
+                    alert(`❌ Arquivo muito grande: ${file.name} (máx. 10MB)`);
+                    return;
+                }
+                
+                // Evitar duplicatas
+                if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                }
+            });
+
+            displaySelectedFiles();
+        };
+
+        // Exibir arquivos selecionados
+        const displaySelectedFiles = () => {
+            if (selectedFiles.length === 0) {
+                filesList.style.display = 'none';
+                return;
+            }
+
+            filesList.style.display = 'block';
+            filesContainer.innerHTML = selectedFiles.map((file, index) => {
+                const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                const icon = getFileIcon(file.name);
+                
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: white; border-radius: 6px; margin-bottom: 8px; border: 1px solid #e5e7eb;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                            <i class="${icon}" style="font-size: 24px; color: #3b82f6;"></i>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 14px; color: #333;">${file.name}</div>
+                                <div style="font-size: 12px; color: #6b7280;">${sizeInMB} MB</div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="removeFile(${index})" style="background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        // Remover arquivo da lista
+        window.removeFile = (index) => {
+            selectedFiles.splice(index, 1);
+            displaySelectedFiles();
+        };
+
+        // Função auxiliar para ícone do arquivo
+        const getFileIcon = (filename) => {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                'pdf': 'fas fa-file-pdf',
+                'doc': 'fas fa-file-word',
+                'docx': 'fas fa-file-word',
+                'xls': 'fas fa-file-excel',
+                'xlsx': 'fas fa-file-excel',
+                'jpg': 'fas fa-file-image',
+                'jpeg': 'fas fa-file-image',
+                'png': 'fas fa-file-image'
+            };
+            return icons[ext] || 'fas fa-file';
+        };
+
+        // Carregar documentos existentes
+        const loadExistingDocuments = async (contractId) => {
+            const container = document.getElementById('existingDocumentsContainer');
+            
+            try {
+                const headers = await getAuthHeaders();
+                const response = await fetch(`/api/v1/contratos/${contractId}/documentos/`, { headers });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar documentos');
+                }
+
+                const documents = await response.json();
+                
+                if (documents.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #6b7280; margin: 20px 0;"><i class="fas fa-inbox" style="margin-right: 8px;"></i>Nenhum documento anexado</p>';
+                    return;
+                }
+
+                container.innerHTML = documents.map(doc => {
+                    const icon = getFileIcon(doc.nome || doc.arquivo);
+                    const fileName = doc.nome || doc.arquivo.split('/').pop();
+                    const fileDate = new Date(doc.created_at || doc.data_upload).toLocaleDateString('pt-BR');
+                    
+                    return `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: white; border-radius: 6px; margin-bottom: 8px; border: 1px solid #e5e7eb;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                                <i class="${icon}" style="font-size: 24px; color: #3b82f6;"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; font-size: 14px; color: #333;">${fileName}</div>
+                                    <div style="font-size: 12px; color: #6b7280;">Anexado em ${fileDate}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 5px;">
+                                <a href="${doc.arquivo}" target="_blank" style="background: #10b981; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block;">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <button type="button" onclick="deleteDocument(${doc.id}, ${contractId})" style="background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                container.innerHTML = `<p style="text-align: center; color: #ef4444; margin: 20px 0;"><i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>Erro ao carregar documentos</p>`;
+            }
+        };
+
+        // Deletar documento
+        window.deleteDocument = async (docId, contractId) => {
+            if (!confirm('Deseja realmente excluir este documento?')) {
+                return;
+            }
+
+            try {
+                const headers = await getAuthHeaders();
+                const response = await fetch(`/api/v1/documentos/${docId}/`, {
+                    method: 'DELETE',
+                    headers
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao excluir documento');
+                }
+
+                alert('✅ Documento excluído com sucesso!');
+                await loadExistingDocuments(contractId);
+            } catch (error) {
+                alert(`❌ Erro: ${error.message}`);
+            }
+        };
+
+        // Submeter formulário de documentos
+        formDocumentos?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (selectedFiles.length === 0) {
+                alert('⚠️ Selecione pelo menos um arquivo para enviar.');
+                return;
+            }
+
+            const contractId = document.getElementById('documentContractId').value;
+            const notes = document.getElementById('inputDocumentNotes').value;
+
+            try {
+                const headers = await getAuthHeaders();
+                delete headers['Content-Type']; // FormData define automaticamente
+
+                for (const file of selectedFiles) {
+                    const formData = new FormData();
+                    formData.append('contrato', contractId);
+                    formData.append('arquivo', file);
+                    if (notes) {
+                        formData.append('observacoes', notes);
+                    }
+
+                    const response = await fetch('/api/v1/documentos/', {
+                        method: 'POST',
+                        headers,
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Erro ao enviar ${file.name}`);
+                    }
+                }
+
+                alert('✅ Documentos enviados com sucesso!');
+                modalDocumentos.style.display = 'none';
+                formDocumentos.reset();
+                selectedFiles = [];
+                filesList.style.display = 'none';
             } catch (error) {
                 alert(`❌ Erro: ${error.message}`);
             }

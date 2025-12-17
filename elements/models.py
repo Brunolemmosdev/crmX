@@ -18,11 +18,18 @@ class Element(models.Model):
 
 
 class ContratosElement(models.Model):
+    STATUS_PAGAMENTO_CHOICES = [
+        ('pendente', 'Pendente'),
+        ('pago', 'Pago'),
+    ]
+    
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='contratos', null=True, blank=True)
     sheet = models.ForeignKey('sheets.Sheet', on_delete=models.CASCADE, related_name='contratos_elements', null=True, blank=True)
     elemento = models.CharField(max_length=255, blank=True, default='')
     empresa = models.CharField(max_length=255, blank=True, default='')
-    objeto = models.TextField(blank=True, default='')
+    objeto = models.TextField(blank=False, default='Objeto não informado')
+    status = models.CharField(max_length=50, blank=True, null=True, default=None)
+    status_pagamento = models.CharField(max_length=20, choices=STATUS_PAGAMENTO_CHOICES, default='pendente', blank=True, verbose_name='Status de Pagamento')
     qtd_total_itens = models.IntegerField(default=0, blank=True)
     valor_total_anterior = models.DecimalField(max_digits=15, decimal_places=2, default=0, blank=True)
     valor_total_reajustado = models.DecimalField(max_digits=15, decimal_places=2, default=0, blank=True)
