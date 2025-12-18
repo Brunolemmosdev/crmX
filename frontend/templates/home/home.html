@@ -154,6 +154,9 @@
                             <span class="value-amount">R$ {{ contract.valor_total_reajustado|default:0|floatformat:2 }}</span>
                         </td>
                         <td class="actions-col">
+                            <button class="btn-icon attach-document-btn" data-contract-id="{{ contract.id }}" title="Anexar documento" style="background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
                             <button class="btn-icon add-subelement-btn" data-contract-id="{{ contract.id }}" title="Adicionar subelemento" style="background: #ffc107; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
                                 <i class="fas fa-plus"></i>
                             </button>
