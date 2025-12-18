@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('elements', '0005_adiciona_status_e_objeto_obrigatorio'),
+        ('elements', '0005_remove_contratoselement_status'),
     ]
 
     operations = [
