@@ -264,6 +264,7 @@
                         <th width="50"></th>
                         <th class="element-col">Elemento</th>
                         <th class="company-col">Empresa</th>
+                        <th class="cnpj-col" width="160">CNPJ</th>
                         <th class="status-col" width="120">Status</th>
                         <th class="object-col">Objeto</th>
                         <th class="qty-col">Qtd Total Itens</th>
@@ -289,6 +290,9 @@
                         </td>
                         <td class="company-col">
                             <span class="company-tag editable-wrapper" contenteditable="true" data-field="empresa" data-contract-id="{{ contract.id }}">{{ contract.empresa|default:'-' }}</span>
+                        </td>
+                        <td class="cnpj-col">
+                            <span class="editable-wrapper" contenteditable="true" data-field="cnpj" data-contract-id="{{ contract.id }}" title="Clique para editar" style="cursor: text; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; display: inline-block;">{{ contract.cnpj|default:'-' }}</span>
                         </td>
                         <td class="status-col">
                             <select class="status-dropdown" data-contract-id="{{ contract.id }}" 
@@ -323,7 +327,7 @@
 
                     <!-- Subelements Section (oculto inicialmente) -->
                     <tr class="subelements-section" style="display: none; background-color: #f8f9fa;" data-parent="{{ contract.id }}">
-                        <td colspan="10">
+                        <td colspan="11">
                             <div style="padding: 20px 20px 20px 90px;">
                                 <h5 style="margin-bottom: 15px; color: #333; font-weight: 600;">📋 Subelementos</h5>
                                 <table class="subelements-table" style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
@@ -402,6 +406,18 @@
                     <input type="text" id="inputEmpresa" required 
                            style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s; box-sizing: border-box;"
                            placeholder="Ex: Empresa ABC Ltda"
+                           onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'"
+                           onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                        <i class="fas fa-id-card" style="color: #667eea; margin-right: 8px;"></i>CNPJ
+                    </label>
+                    <input type="text" id="inputCnpj" 
+                           style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s; box-sizing: border-box;"
+                           placeholder="Ex: 00.000.000/0000-00"
+                           maxlength="18"
                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'"
                            onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
                 </div>
@@ -1277,6 +1293,7 @@
             e.preventDefault();
 
             const empresa = document.getElementById('inputEmpresa').value;
+            const cnpj = document.getElementById('inputCnpj').value;
             const objeto = document.getElementById('inputObjeto').value;
             const status = document.getElementById('inputStatus').value;
             const qtdItens = document.getElementById('inputQtdItens').value;
@@ -1293,6 +1310,7 @@
                     body: JSON.stringify({
                         sheet: SHEET_ID,
                         empresa: empresa,
+                        cnpj: cnpj,
                         objeto: objeto,
                         status: status,
                         qtd_total_itens: parseInt(qtdItens),

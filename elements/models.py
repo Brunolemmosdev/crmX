@@ -27,6 +27,7 @@ class ContratosElement(models.Model):
     sheet = models.ForeignKey('sheets.Sheet', on_delete=models.CASCADE, related_name='contratos_elements', null=True, blank=True)
     elemento = models.CharField(max_length=255, blank=True, default='')
     empresa = models.CharField(max_length=255, blank=True, default='')
+    cnpj = models.CharField(max_length=18, blank=True, default='', verbose_name='CNPJ')
     objeto = models.TextField(blank=False, default='Objeto não informado')
     status = models.CharField(max_length=50, blank=True, null=True, default=None)
     status_pagamento = models.CharField(max_length=20, choices=STATUS_PAGAMENTO_CHOICES, default='pendente', blank=True, verbose_name='Status de Pagamento')

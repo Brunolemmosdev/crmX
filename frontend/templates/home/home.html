@@ -106,6 +106,7 @@
                         <th width="50"></th>
                         <th class="element-col">Elemento</th>
                         <th class="company-col">Empresa</th>
+                        <th class="cnpj-col" width="160">CNPJ</th>
                         <th class="status-col" width="120">Status</th>
                         <th class="object-col">Objeto</th>
                         <th class="payment-status-col" width="150">Status de Pagamento</th>
@@ -132,6 +133,13 @@
                         </td>
                         <td class="company-col">
                             <span class="company-tag">{{ contract.empresa|default:'-' }}</span>
+                        </td>
+                        <td class="cnpj-col">
+                            <span class="editable-field cnpj-field" 
+                                  data-contract-id="{{ contract.id }}" 
+                                  data-field="cnpj"
+                                  title="Duplo-clique para editar"
+                                  style="cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; display: inline-block;">{{ contract.cnpj|default:'-' }}</span>
                         </td>
                         <td class="status-col">
                             <select class="status-dropdown" data-contract-id="{{ contract.id }}" 
@@ -178,7 +186,7 @@
 
                     <!-- Subelements Section (oculto inicialmente) -->
                     <tr class="subelements-section" style="display: none; background-color: #f8f9fa;" data-parent="{{ contract.id }}">
-                        <td colspan="11">
+                        <td colspan="12">
                             <div style="padding: 20px 20px 20px 90px;">
                                 <h5 style="margin-bottom: 15px; color: #333; font-weight: 600;">📋 Subelementos</h5>
                                 <table class="subelements-table" style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
@@ -209,7 +217,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="11" style="text-align: center; padding: 40px; color: #999;">
+                        <td colspan="12" style="text-align: center; padding: 40px; color: #999;">
                             <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
                             Nenhum contrato cadastrado
                         </td>
@@ -257,6 +265,18 @@
                     <input type="text" id="inputEmpresa" required 
                            style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s; box-sizing: border-box;"
                            placeholder="Ex: Empresa ABC Ltda"
+                           onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'"
+                           onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                        <i class="fas fa-id-card" style="color: #667eea; margin-right: 8px;"></i>CNPJ
+                    </label>
+                    <input type="text" id="inputCnpj" 
+                           style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s; box-sizing: border-box;"
+                           placeholder="Ex: 00.000.000/0000-00"
+                           maxlength="18"
                            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)'"
                            onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
                 </div>
@@ -666,7 +686,7 @@
                         <div>
                             <h3 style="color: #10b981; font-size: 16px; margin: 0 0 15px 0; border-bottom: 2px solid #10b981; padding-bottom: 5px;">EMITENTE</h3>
                             <p style="margin: 5px 0; font-size: 14px;"><strong>Empresa:</strong> <span id="nfEmpresa">-</span></p>
-                            <p style="margin: 5px 0; font-size: 14px;"><strong>CNPJ:</strong> <span id="nfCnpj">00.000.000/0001-00</span></p>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>CNPJ:</strong> <span id="nfCnpj">-</span></p>
                             <p style="margin: 5px 0; font-size: 14px;"><strong>Endereço:</strong> <span id="nfEndereco">-</span></p>
                         </div>
                         <div>
@@ -760,6 +780,16 @@
             }
         }
 
+        .editable-field:hover {
+            background-color: #f0f4ff !important;
+            border: 1px dashed #667eea !important;
+        }
+
+        .cnpj-field {
+            font-family: monospace;
+            font-size: 13px;
+        }
+
         @media print {
             body * {
                 visibility: hidden;
@@ -829,7 +859,7 @@
         const fillInvoiceData = (contract, subelement) => {
             // Dados da empresa
             document.getElementById('nfEmpresa').textContent = contract.empresa || '-';
-            document.getElementById('nfCnpj').textContent = '00.000.000/0001-00';
+            document.getElementById('nfCnpj').textContent = contract.cnpj || '-';
             document.getElementById('nfEndereco').textContent = '-';
             
             // Dados da nota
@@ -1433,6 +1463,7 @@
             e.preventDefault();
 
             const empresa = document.getElementById('inputEmpresa').value;
+            const cnpj = document.getElementById('inputCnpj').value;
             const objeto = document.getElementById('inputObjeto').value;
             const status = document.getElementById('inputStatus').value;
             const statusPagamento = document.getElementById('inputStatusPagamento').value;
@@ -1450,6 +1481,7 @@
                     body: JSON.stringify({
                         ...(SHEET_ID ? { sheet: SHEET_ID } : {}),
                         empresa: empresa,
+                        cnpj: cnpj,
                         objeto: objeto,
                         status: status,
                         status_pagamento: statusPagamento,
